@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
+from __future__ import division
 import time
 import numpy as np
 import pandas as pd
 import glob
 import operator
+from itertools import combinations
 
 categories_file = "categories.tsv"
+
+file = open("results.txt", "w")
 
 test_path = "training.v2"
 allFiles = glob.glob(test_path + "/training.*.tsv")
@@ -63,7 +67,46 @@ frame = []
 classes = []
 sorted_words = []
 
-#Eksperyment (punkt 2.5)
+# For single word
+single_words_dictionary = {}
+for value in set(bag_of_words):
+    single_words_dictionary[value] = {}
+for advert in filtred_data:
+    for word in bag_of_words:
+        if(word in advert[1]):
+            if not np.isnan(advert[4]):
+                if advert[4] in single_words_dictionary[word]:
+                    single_words_dictionary[word][advert[4]] += 1
+                else:
+                    single_words_dictionary[word][advert[4]] = 1
+            if not np.isnan(advert[5]):
+                if advert[5] in single_words_dictionary[word]:
+                    single_words_dictionary[word][advert[5]] += 1
+                else:
+                    single_words_dictionary[word][advert[5]] = 1
+            if not np.isnan(advert[6]):
+                if advert[6] in single_words_dictionary[word]:
+                    single_words_dictionary[word][advert[6]] += 1
+                else:
+                    single_words_dictionary[word][advert[6]] = 1
+
+word_ranking = {}
+
+for word in single_words_dictionary:
+    sum_for_word = sum(single_words_dictionary[word].values())
+    word_ranking[word] = sum_for_word
+    single_words_dictionary[word] = sorted(single_words_dictionary[word].items(), key=operator.itemgetter(1))[-3:]
+    file.write(str(word) + "\n")
+    for category in single_words_dictionary[word]:
+        new_category = list(category)
+        new_category.append(float(new_category[1]/sum_for_word))
+        file.write(str(new_category) + "\n")
+
+word_ranking = sorted(word_ranking.items(), key=operator.itemgetter(1))[-30:]
+file.write("\n")
+file.write(str(word_ranking)+"\n")
+
+file.close()
 #Grupowanie (2.5.1)
 #Wyszukiwanie najbliższych sąsiadów (2.5.2)
 
