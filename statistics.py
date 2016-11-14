@@ -42,6 +42,18 @@ for value in set(words):
 for value in words:
     classes[value] += 1
 sorted_words = sorted(classes.items(), key=operator.itemgetter(1))[-100:]
+bag_of_words = [x[0] for x in sorted_words]
 print("Czas tworzenia bag of words w s: " + str(time.time()-t0))
 
-#Trzeba zrobić filtrowanie danych aby pozbyć się tych spoza bag of words
+filtred_data = []
+for advert in frame:
+    if any(s in advert[1] for s in bag_of_words):
+        filtred_data.append(advert)
+
+filtred_data = np.array(filtred_data)
+print(filtred_data[:, 0].size)
+#Trzeba zrobić filtrowanie danych aby pozbyć się tych spoza bag of words (punkt 2.4)
+#Eksperyment (punkt 2.5)
+#Grupowanie (2.5.1)
+#Wyszukiwanie najbliższych sąsiadów (2.5.2)
+
