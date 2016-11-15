@@ -21,14 +21,14 @@ for file_ in allFiles:
     list_.append(df)
 frame = pd.concat(list_)
 frame = frame.values
-print("Czas wczytywania training w s: " + str(time.time()-t0))
+file.write("Czas wczytywania training w s: " + str(time.time()-t0) + "\n")
 
 t0 = time.time()
 categories = pd.read_csv(categories_file, sep="\t", header=None, skiprows=[0,1]).values
-print("Czas wczytywania categories w s: " + str(time.time()-t0))
+file.write("Czas wczytywania categories w s: " + str(time.time()-t0)+ "\n")
 
-print(categories[:,0].size)
-print(frame[:,0].size)
+file.write(str(categories[:,0].size)+ "\n")
+file.write(str(frame[:,0].size)+ "\n")
 
 # Get bags of 100 most popular words
 t0 = time.time()
@@ -47,7 +47,7 @@ for value in words:
     classes[value] += 1
 sorted_words = sorted(classes.items(), key=operator.itemgetter(1))[-100:]
 bag_of_words = [x[0] for x in sorted_words]
-print("Czas tworzenia bag of words w s: " + str(time.time()-t0))
+file.write("Czas tworzenia bag of words w s: " + str(time.time()-t0)+ "\n")
 
 #filtering data
 t0 = time.time()
@@ -57,17 +57,18 @@ for advert in frame:
         filtred_data.append(advert)
 
 filtred_data = np.array(filtred_data)
-print("Czas tworzenia przefiltrowanych danych w s: " + str(time.time()-t0))
-print(filtred_data[:, 0].size)
+file.write("Czas tworzenia przefiltrowanych danych w s: " + str(time.time()-t0)+ "\n")
+file.write(str(filtred_data[:, 0].size) + "\n")
 
-print("Rozmiar tabeli trainings " + str(np.array(frame).nbytes) + "\n")
-print("Rozmiar tabeli filtred_data " + str(filtred_data.nbytes) + "\n")
+file.write("Rozmiar tabeli trainings " + str(np.array(frame).nbytes) + "\n")
+file.write("Rozmiar tabeli filtred_data " + str(filtred_data.nbytes) + "\n")
 
 frame = []
 classes = []
 sorted_words = []
 
 # For single word
+t0 = time.time()
 single_words_dictionary = {}
 for value in set(bag_of_words):
     single_words_dictionary[value] = {}
@@ -102,9 +103,54 @@ for word in single_words_dictionary:
         new_category.append(float(new_category[1]/sum_for_word))
         file.write(str(new_category) + "\n")
 
+print("Finished")
 word_ranking = sorted(word_ranking.items(), key=operator.itemgetter(1))[-30:]
 file.write("\n")
 file.write(str(word_ranking)+"\n")
+file.write("Czas tworzenia grupowania dla pojedynczych slow w s: " + str(time.time()-t0)+ "\n")
+
+#For tuples
+t0 = time.time()
+tuples = ([",".join(map(str, comb)) for comb in combinations(bag_of_words, 2)])
+tuples_words_dictionary = {}
+for value in set(tuples):
+    tuples_words_dictionary[value] = {}
+for advert in filtred_data:
+    for word in tuples:
+        if(word[0] in advert[1] and word[1] in advert[1]):
+            if not np.isnan(advert[4]):
+                if advert[4] in tuples_words_dictionary[word]:
+                    tuples_words_dictionary[word][advert[4]] += 1
+                else:
+                    tuples_words_dictionary[word][advert[4]] = 1
+            if not np.isnan(advert[5]):
+                if advert[5] in tuples_words_dictionary[word]:
+                    tuples_words_dictionary[word][advert[5]] += 1
+                else:
+                    tuples_words_dictionary[word][advert[5]] = 1
+            if not np.isnan(advert[6]):
+                if advert[6] in tuples_words_dictionary[word]:
+                    tuples_words_dictionary[word][advert[6]] += 1
+                else:
+                    tuples_words_dictionary[word][advert[6]] = 1
+        print("Tworzę ranking tupli")
+word_ranking = {}
+
+for word in tuples_words_dictionary:
+    sum_for_word = sum(tuples_words_dictionary[word].values())
+    word_ranking[word] = sum_for_word
+    tuples_words_dictionary[word] = sorted(tuples_words_dictionary[word].items(), key=operator.itemgetter(1))[-3:]
+    file.write(str(word) + "\n")
+    for category in tuples_words_dictionary[word]:
+        new_category = list(category)
+        new_category.append(float(new_category[1]/sum_for_word))
+        file.write(str(new_category) + "\n")
+    print("Druga iteracja")
+
+word_ranking = sorted(word_ranking.items(), key=operator.itemgetter(1))[-30:]
+file.write("\n")
+file.write(str(word_ranking)+"\n")
+file.write("Czas tworzenia grupowania danych dla tupli w s: " + str(time.time()-t0) + "\n")
 
 file.close()
 #Grupowanie (2.5.1)
