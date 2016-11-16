@@ -34,7 +34,7 @@ file.write(str(frame[:,0].size)+ "\n")
 t0 = time.time()
 titles = frame[:,1]
 words = []
-denied_words = ["dla", "lub", "bdb", "nowy", "nowa", "okazja", "zł", "bez"]
+denied_words = ["dla", "lub", "bdb", "nowy", "nowa", "okazja", "zł", "bez", "polecam", "zaraz", "sprzedam", "nie"]
 for title in titles:
     title = title.replace(',', '')
     title = title.replace('/', '')
