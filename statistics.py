@@ -45,7 +45,7 @@ for title in titles:
     title = title.replace('-', '')
     string_words = title.split()
     for word in string_words:
-        if(len(word) > 2 and not all(ch.isdigit() for ch in word) and not any(word in s for s in denied_words)):
+        if(len(word) > 2 and not all(ch.isdigit() for ch in word.lower()) and not any(word.lower() in s for s in denied_words)):
             words.append(word.lower())
 
 classes = {}
