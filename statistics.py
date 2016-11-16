@@ -34,7 +34,7 @@ file.write(str(frame[:,0].size)+ "\n")
 t0 = time.time()
 titles = frame[:,1]
 words = []
-denied_words = ["dla", "lub", "bdb", "nowy", "nowa", "okazja", "zł", "bez", "polecam", "zaraz", "sprzedam", "nie"]
+denied_words = ["dla", "lub", "bdb", "nowy", "nowa", "okazja", "zł", "bez", "polecam", "zaraz", "sprzedam", "nie", "nowe"]
 for title in titles:
     title = title.replace(',', '')
     title = title.replace('/', '')
@@ -114,7 +114,6 @@ sorted_words = []
 #         new_category.append(float(new_category[1]/sum_for_word))
 #         file.write(str(new_category) + "\n")
 #
-# print("Finished")
 # word_ranking = sorted(word_ranking.items(), key=operator.itemgetter(1))[-30:]
 # file.write("\n")
 # file.write(str(word_ranking)+"\n")
