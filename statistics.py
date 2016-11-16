@@ -34,19 +34,30 @@ file.write(str(frame[:,0].size)+ "\n")
 t0 = time.time()
 titles = frame[:,1]
 words = []
+denied_words = ["dla", "lub", "bdb", "nowy", "nowa", "okazja", "zł", "bez"]
 for title in titles:
     title = title.replace(',', '')
+    title = title.replace('/', '')
+    title = title.replace(':', '')
+    title = title.replace(';', '')
+    title = title.replace('?', '')
+    title = title.replace('!', '')
+    title = title.replace('-', '')
     string_words = title.split()
     for word in string_words:
-        if(len(word) > 2):
-            words.append(word)
+        if(len(word) > 2 and not all(ch.isdigit() for ch in word) and not any(word in s for s in denied_words)):
+            words.append(word.lower())
+
 classes = {}
 for value in set(words):
     classes[value] = 0
 for value in words:
     classes[value] += 1
+
 sorted_words = sorted(classes.items(), key=operator.itemgetter(1))[-100:]
 bag_of_words = [x[0] for x in sorted_words]
+file.write(str(sorted_words) + "\n")
+file.write(str(len(bag_of_words)) + "\n")
 file.write("Czas tworzenia bag of words w s: " + str(time.time()-t0)+ "\n")
 
 #filtering data
@@ -67,90 +78,93 @@ frame = []
 classes = []
 sorted_words = []
 
-# For single word
-t0 = time.time()
-single_words_dictionary = {}
-for value in set(bag_of_words):
-    single_words_dictionary[value] = {}
-for advert in filtred_data:
-    for word in bag_of_words:
-        if(word in advert[1]):
-            if not np.isnan(advert[4]):
-                if advert[4] in single_words_dictionary[word]:
-                    single_words_dictionary[word][advert[4]] += 1
-                else:
-                    single_words_dictionary[word][advert[4]] = 1
-            if not np.isnan(advert[5]):
-                if advert[5] in single_words_dictionary[word]:
-                    single_words_dictionary[word][advert[5]] += 1
-                else:
-                    single_words_dictionary[word][advert[5]] = 1
-            if not np.isnan(advert[6]):
-                if advert[6] in single_words_dictionary[word]:
-                    single_words_dictionary[word][advert[6]] += 1
-                else:
-                    single_words_dictionary[word][advert[6]] = 1
-
-word_ranking = {}
-
-for word in single_words_dictionary:
-    sum_for_word = sum(single_words_dictionary[word].values())
-    word_ranking[word] = sum_for_word
-    single_words_dictionary[word] = sorted(single_words_dictionary[word].items(), key=operator.itemgetter(1))[-3:]
-    file.write(str(word) + "\n")
-    for category in single_words_dictionary[word]:
-        new_category = list(category)
-        new_category.append(float(new_category[1]/sum_for_word))
-        file.write(str(new_category) + "\n")
-
-print("Finished")
-word_ranking = sorted(word_ranking.items(), key=operator.itemgetter(1))[-30:]
-file.write("\n")
-file.write(str(word_ranking)+"\n")
-file.write("Czas tworzenia grupowania dla pojedynczych slow w s: " + str(time.time()-t0)+ "\n")
-
-#For tuples
-t0 = time.time()
-tuples = ([",".join(map(str, comb)) for comb in combinations(bag_of_words, 2)])
-tuples_words_dictionary = {}
-for value in set(tuples):
-    tuples_words_dictionary[value] = {}
-for advert in filtred_data:
-    for word in tuples:
-        if(word[0] in advert[1] and word[1] in advert[1]):
-            if not np.isnan(advert[4]):
-                if advert[4] in tuples_words_dictionary[word]:
-                    tuples_words_dictionary[word][advert[4]] += 1
-                else:
-                    tuples_words_dictionary[word][advert[4]] = 1
-            if not np.isnan(advert[5]):
-                if advert[5] in tuples_words_dictionary[word]:
-                    tuples_words_dictionary[word][advert[5]] += 1
-                else:
-                    tuples_words_dictionary[word][advert[5]] = 1
-            if not np.isnan(advert[6]):
-                if advert[6] in tuples_words_dictionary[word]:
-                    tuples_words_dictionary[word][advert[6]] += 1
-                else:
-                    tuples_words_dictionary[word][advert[6]] = 1
-        print("Tworzę ranking tupli")
-word_ranking = {}
-
-for word in tuples_words_dictionary:
-    sum_for_word = sum(tuples_words_dictionary[word].values())
-    word_ranking[word] = sum_for_word
-    tuples_words_dictionary[word] = sorted(tuples_words_dictionary[word].items(), key=operator.itemgetter(1))[-3:]
-    file.write(str(word) + "\n")
-    for category in tuples_words_dictionary[word]:
-        new_category = list(category)
-        new_category.append(float(new_category[1]/sum_for_word))
-        file.write(str(new_category) + "\n")
-    print("Druga iteracja")
-
-word_ranking = sorted(word_ranking.items(), key=operator.itemgetter(1))[-30:]
-file.write("\n")
-file.write(str(word_ranking)+"\n")
-file.write("Czas tworzenia grupowania danych dla tupli w s: " + str(time.time()-t0) + "\n")
+# # For single word
+# t0 = time.time()
+# single_words_dictionary = {}
+# for value in set(bag_of_words):
+#     single_words_dictionary[value] = {}
+# for advert in filtred_data:
+#     for word in bag_of_words:
+#         if(word in advert[1]):
+#             if not np.isnan(advert[4]):
+#                 if advert[4] in single_words_dictionary[word]:
+#                     single_words_dictionary[word][advert[4]] += 1
+#                 else:
+#                     single_words_dictionary[word][advert[4]] = 1
+#             if not np.isnan(advert[5]):
+#                 if advert[5] in single_words_dictionary[word]:
+#                     single_words_dictionary[word][advert[5]] += 1
+#                 else:
+#                     single_words_dictionary[word][advert[5]] = 1
+#             if not np.isnan(advert[6]):
+#                 if advert[6] in single_words_dictionary[word]:
+#                     single_words_dictionary[word][advert[6]] += 1
+#                 else:
+#                     single_words_dictionary[word][advert[6]] = 1
+#
+# word_ranking = {}
+#
+# for word in single_words_dictionary:
+#     sum_for_word = sum(single_words_dictionary[word].values())
+#     word_ranking[word] = sum_for_word
+#     single_words_dictionary[word] = sorted(single_words_dictionary[word].items(), key=operator.itemgetter(1))[-3:]
+#     file.write(str(word) + "\n")
+#     for category in single_words_dictionary[word]:
+#         new_category = list(category)
+#         new_category.append(float(new_category[1]/sum_for_word))
+#         file.write(str(new_category) + "\n")
+#
+# print("Finished")
+# word_ranking = sorted(word_ranking.items(), key=operator.itemgetter(1))[-30:]
+# file.write("\n")
+# file.write(str(word_ranking)+"\n")
+# file.write("Czas tworzenia grupowania dla pojedynczych slow w s: " + str(time.time()-t0)+ "\n")
+#
+# #For tuples
+# t0 = time.time()
+# tuples = ([",".join(map(str, comb)) for comb in combinations(bag_of_words, 2)])
+#
+# tuples_words_dictionary = {}
+# for value in set(tuples):
+#     tuples_words_dictionary[value] = {}
+#
+# index = 0
+# for word in tuples:
+#     for advert in filtred_data:
+#         if(word[0] in advert[1] and word[1] in advert[1]):
+#             if not np.isnan(advert[4]):
+#                 if advert[4] in tuples_words_dictionary[word]:
+#                     tuples_words_dictionary[word][advert[4]] += 1
+#                 else:
+#                     tuples_words_dictionary[word][advert[4]] = 1
+#             if not np.isnan(advert[5]):
+#                 if advert[5] in tuples_words_dictionary[word]:
+#                     tuples_words_dictionary[word][advert[5]] += 1
+#                 else:
+#                     tuples_words_dictionary[word][advert[5]] = 1
+#             if not np.isnan(advert[6]):
+#                 if advert[6] in tuples_words_dictionary[word]:
+#                     tuples_words_dictionary[word][advert[6]] += 1
+#                 else:
+#                     tuples_words_dictionary[word][advert[6]] = 1
+#     print(index)
+#     index += 1
+# word_ranking = {}
+#
+# for word in tuples_words_dictionary:
+#     sum_for_word = sum(tuples_words_dictionary[word].values())
+#     word_ranking[word] = sum_for_word
+#     tuples_words_dictionary[word] = sorted(tuples_words_dictionary[word].items(), key=operator.itemgetter(1))[-3:]
+#     file.write(str(word) + "\n")
+#     for category in tuples_words_dictionary[word]:
+#         new_category = list(category)
+#         new_category.append(float(new_category[1]/sum_for_word))
+#         file.write(str(new_category) + "\n")
+#
+# word_ranking = sorted(word_ranking.items(), key=operator.itemgetter(1))[-30:]
+# file.write("\n")
+# file.write(str(word_ranking)+"\n")
+# file.write("Czas tworzenia grupowania danych dla tupli w s: " + str(time.time()-t0) + "\n")
 
 file.close()
 #Grupowanie (2.5.1)
